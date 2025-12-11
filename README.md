@@ -178,6 +178,27 @@ The state will update until status becomes `done`.
 <h2>Screenshots</h2>
 
 Below are example screenshots from the API documentation.
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 062529.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 062548.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 064508.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 064533.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 065550.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 065710.png" width"700">
+</p>
+<p align="center">
+  <img src="images\Screenshot 2025-12-11 065722.png" width"700">
+</p>
 
 
 
