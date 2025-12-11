@@ -1,130 +1,202 @@
-Code Review Mini-Agent
+<h1>Code Review Mini-Agent</h1>
 
-This project is a small FastAPI-based service that performs automated code review on Python source files.
-It includes static analysis (cyclomatic complexity, function extraction, TODO/print detection), optional linting with Ruff, and a simple workflow engine for defining and executing multi-step review graphs.
-All review results are stored in a SQLite database using SQLAlchemy.
+This project implements a lightweight Code Review Agent built with FastAPI.  
+It analyzes Python source code, extracts functions, detects issues (TODOs, prints), and stores structured review results in a SQLite database.  
+An additional experimental graph execution engine allows chaining multiple analysis tools together.
 
-Features
-Code Review
+<h2>Features</h2>
 
-Extracts function definitions and basic metadata using Python’s AST module.
+- Submit raw Python code and receive an automated review.
+- Upload `.py` files using multipart form.
+- Extract function metadata.
+- Detect TODO comments and print statements.
+- Compute complexity metrics.
+- Persist reviews in SQLite.
+- Background execution engine for multi-step graph workflows.
+- Auto-open documentation UI when the server starts.
+- Clean API structure with Pydantic v2 and SQLAlchemy 2.0.
 
-Computes cyclomatic complexity scores using Radon.
+---
 
-Detects TODO comments, print statements, and other simple code smells.
+<h2>Project Structure</h2>
 
-Generates a summary and structured findings.
-
-Optional linting step with Ruff when installed locally.
-
-File Uploads
-
-Supports uploading .py files for review through a multipart endpoint.
-
-Persistence
-
-Every review is stored in a SQLite database with ID, hash, summary, findings, suggestions, and timestamp.
-
-Workflow / Graph Engine
-
-Allows defining a small directed graph of “steps” (nodes).
-
-Each node corresponds to a tool function (e.g., extract → review → end).
-
-The engine runs the graph step by step and returns execution logs and the final state.
-
-API Documentation
-
-The service exposes an OpenAPI specification and interactive documentation at:
-
-http://127.0.0.1:8000/docs
-
-Project Structure
 app/
- ├── main.py           # FastAPI entrypoint  
- ├── agent.py          # CodeReviewAgent logic  
- ├── utils.py          # AST helpers, radon utilities  
- ├── engine.py         # Graph runner implementation  
- ├── graphs.py         # Graph create/run/state endpoints  
- ├── models.py         # SQLAlchemy model definitions  
- ├── schemas.py        # Pydantic schemas  
- └── db.py             # Database session + initialization
-
-tests/
- └── test_graphs.py    # Basic tests for graph engine
-
-requirements.txt
+│
+├── agent.py # Code review logic using radon and custom rules
+├── main.py # FastAPI initialization and routing
+├── models.py # SQLAlchemy ORM models
+├── schemas.py # Pydantic schemas (v2)
+├── db.py # Database session and initialization
+├── graphs.py # Graph execution engine endpoints
+├── engine.py # Simple execution engine for graph nodes
+├── utils.py # Helper utilities for parsing code
+│
+images/ # Screenshots for documentation
 README.md
+requirements.txt
 .gitignore
 
-Getting Started
-Create a virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+yaml
 
-Install dependencies
-python -m pip install --upgrade pip
+
+---
+
+<h2>Installation</h2>
+
+<h3>1. Clone the repository</h3>
+
+Plain text command:
+
+git clone https://github.com/sheebanadeem/code-review-mini-agent.git  
+cd code-review-mini-agent
+
+<h3>2. Create a virtual environment</h3>
+
+python -m venv .venv  
+.\.venv\Scripts\activate
+
+<h3>3. Install dependencies</h3>
+
 pip install -r requirements.txt
 
+---
 
-(Optional)
+<h2>Running the Application</h2>
 
-pip install ruff
-
-Running the Application
-
-To run the FastAPI service:
-
-# Disable auto-opening browser tabs when using --reload, if needed
-$env:OPEN_BROWSER = "0"
+<h3>Start the FastAPI server</h3>
 
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
-
-Open the API docs at:
+The server will start and automatically open:
 
 http://127.0.0.1:8000/docs
 
-API Overview
-POST /review
+Here you can test all endpoints interactively.
 
-Submit Python source code in JSON format.
+---
 
-Example body:
+<h2>API Usage</h2>
+
+<h3>1. Submit Code for Review</h3>
+
+Endpoint: POST /review
+
+Example request body:
 
 {
-  "source": "def add(a, b):\n    return a + b\n# TODO: improve types"
+"source": "def add(a, b):\n return a + b\n# TODO: improve validation"
 }
 
-POST /review/file
+yaml
+Copy code
 
-Upload a .py file using multipart form-data.
+Expected output fields:
+- id
+- source_hash
+- summary
+- findings
+- suggestions
+- created_at
 
-Field: file
+---
+
+<h3>2. Upload a Python File</h3>
+
+Endpoint: POST /review/file  
+Use multipart form with key: file
+
+---
+
+<h3>3. Retrieve a Review</h3>
 
 GET /review/{id}
 
-Fetch a previously stored review by its ID.
+---
 
-Graph Endpoints
+<h2>Graph Execution Engine (Optional Feature)</h2>
 
-POST /graph/create – Define a graph.
+You can define a workflow (graph) consisting of multiple tools:
 
-POST /graph/run – Start execution of a graph using an initial state.
+- code_review  
+- extract_functions  
+- find_todos  
 
-GET /graph/state/{run_id} – Poll graph execution progress.
+<h3>Create Example Graph</h3>
 
-Running Tests
-pytest -q
+Graph structure:
 
-Notes
+{
+"graph": {
+"start_node": "n1",
+"nodes": [
+{ "id": "n1", "tool": "code_review", "inputs": { "source": "{{source}}" }, "next": ["n2"] },
+{ "id": "n2", "tool": "extract_functions", "inputs": { "source": "{{source}}" }, "next": ["n3"] },
+{ "id": "n3", "tool": "find_todos", "inputs": { "source": "{{source}}" }, "next": [] }
+]
+}
+}
 
-The service automatically handles cases where Ruff is not installed.
+css
+Copy code
 
-Radon is required for complexity analysis and included in requirements.txt.
+<h3>Run Graph</h3>
 
-File uploads are decoded as UTF-8 with a safe fallback to avoid crashes.
+Send:
 
-All timestamps returned to the client are normalized to ISO-8601 strings.
+{
+"graph_id": <id>,
+"initial_state": {
+"source": "def greet(name):\n print('Hello', name)\n# TODO: add tests\n"
+}
+}
 
-The workflow engine limits iterations to prevent infinite loops.
+php-template
+Copy code
+
+<h3>Check Graph State</h3>
+
+GET /graph/state/{run_id}
+
+The state will update until status becomes `done`.
+
+---
+
+<h2>Screenshots</h2>
+
+Below are example screenshots from the API documentation.
+
+```html
+<img src="images/Screenshot 2025-12-11 062529.png" width="700">
+<img src="images/Screenshot 2025-12-11 062548.png" width="700">
+<img src="images/Screenshot 2025-12-11 064508.png" width="700">
+<img src="images/Screenshot 2025-12-11 064533.png" width="700">
+<img src="images/Screenshot 2025-12-11 065550.png" width="700">
+<img src="images/Screenshot 2025-12-11 065710.png" width="700">
+<img src="images/Screenshot 2025-12-11 065722.png" width="700">
+<h2>Database</h2>
+A SQLite file (reviews.db) is created automatically on first run.
+It is ignored using .gitignore and should not be committed to Git.
+
+<h2>Testing</h2>
+pytest
+
+<h2>License</h2>
+This project is provided for educational and assessment purposes.
+
+yaml
+Copy code
+
+---
+
+If you want:
+
+- a shorter version  
+- a version with a TOC  
+- or a version that removes the graph engine section entirely  
+
+I can generate those too.
+
+
+
+
+
