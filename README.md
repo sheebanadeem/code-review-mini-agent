@@ -44,12 +44,14 @@ yaml
 <h2>Installation</h2>
 
 <h3>1. Clone the repository</h3>
+<div>
+bash
 
-Plain text command:
 
 git clone https://github.com/sheebanadeem/code-review-mini-agent.git  
 cd code-review-mini-agent
-
+~~~
+</div>
 <h3>2. Create a virtual environment</h3>
 
 python -m venv .venv  
