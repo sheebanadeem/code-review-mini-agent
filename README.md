@@ -179,36 +179,7 @@ The state will update until status becomes `done`.
 
 Below are example screenshots from the API documentation.
 
-```html
-<img src="images/Screenshot 2025-12-11 062529.png" width="700">
-<img src="images/Screenshot 2025-12-11 062548.png" width="700">
-<img src="images/Screenshot 2025-12-11 064508.png" width="700">
-<img src="images/Screenshot 2025-12-11 064533.png" width="700">
-<img src="images/Screenshot 2025-12-11 065550.png" width="700">
-<img src="images/Screenshot 2025-12-11 065710.png" width="700">
-<img src="images/Screenshot 2025-12-11 065722.png" width="700">
-<h2>Database</h2>
-A SQLite file (reviews.db) is created automatically on first run.
-It is ignored using .gitignore and should not be committed to Git.
 
-<h2>Testing</h2>
-pytest
-
-<h2>License</h2>
-This project is provided for educational and assessment purposes.
-
-yaml
-Copy code
-
----
-
-If you want:
-
-- a shorter version  
-- a version with a TOC  
-- or a version that removes the graph engine section entirely  
-
-I can generate those too.
 
 
 
