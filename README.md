@@ -56,13 +56,16 @@ cd code-review-mini-agent
 </div>
 <h3>2. Create a virtual environment</h3>
 <div>
+  
 ```bash
 python -m venv .venv  
 .\.venv\Scripts\activate
 ```
+
 </div>
 <h3>3. Install dependencies</h3>
 <div>
+  
 ```bash
 pip install -r requirements.txt
 ```
@@ -73,6 +76,7 @@ pip install -r requirements.txt
 
 <h3>Start the FastAPI server</h3>
 <div>
+  
 ```bash
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
