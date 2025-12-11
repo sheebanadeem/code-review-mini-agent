@@ -1,7 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.class
+*$py.class
 
 # Distribution / packaging
 build/
@@ -15,7 +15,7 @@ venv/
 ENV/
 env/
 
-# Local python env
+# Python local env
 .Python
 
 # Installer logs
@@ -31,12 +31,10 @@ htmlcov/
 .vscode/
 .idea/
 
-# OS clutter
+# macOS
 .DS_Store
-Thumbs.db
 
-# SQLite DB (do not track)
-reviews.db
+# SQLite DB (if you don't want to push DB)
 *.db
 *.sqlite3
 

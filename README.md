@@ -1,198 +1,130 @@
-<h1>Code Review Mini-Agent</h1>
+Code Review Mini-Agent
 
-A lightweight FastAPI service for automated static analysis of Python code.  
-It computes cyclomatic complexity, detects TODOs and print statements, stores results in SQLite, and includes a simple workflow/graph execution engine.
+This project is a small FastAPI-based service that performs automated code review on Python source files.
+It includes static analysis (cyclomatic complexity, function extraction, TODO/print detection), optional linting with Ruff, and a simple workflow engine for defining and executing multi-step review graphs.
+All review results are stored in a SQLite database using SQLAlchemy.
 
----
+Features
+Code Review
 
-<h2>Features</h2>
+Extracts function definitions and basic metadata using Python’s AST module.
 
-- Submit Python source code via POST /review  
-- Upload .py files via POST /review/file  
-- Retrieve reviews by ID  
-- Cyclomatic complexity (Radon)  
-- TODO and print detection  
-- Optional Ruff linting  
-- SQLite persistence  
-- Graph/workflow engine  
-- Auto documentation at /docs  
+Computes cyclomatic complexity scores using Radon.
 
----
+Detects TODO comments, print statements, and other simple code smells.
 
-<h2>Tech Stack</h2>
+Generates a summary and structured findings.
 
-- Python 3.11+  
-- FastAPI  
-- SQLAlchemy  
-- Pydantic v2  
-- Radon  
-- Uvicorn  
-- SQLite  
+Optional linting step with Ruff when installed locally.
 
----
+File Uploads
 
-<h2>Project Structure</h2>
+Supports uploading .py files for review through a multipart endpoint.
 
-app/  
- ├── agent.py        (core analysis logic)  
- ├── main.py         (API entrypoint)  
- ├── models.py       (database models)  
- ├── schemas.py      (Pydantic schemas)  
- ├── db.py           (database setup)  
- ├── engine.py       (graph engine)  
- └── graphs.py       (graph endpoints)  
+Persistence
 
-tests/  
- └── test_graphs.py
+Every review is stored in a SQLite database with ID, hash, summary, findings, suggestions, and timestamp.
 
-requirements.txt  
-README.md  
-.gitignore  
+Workflow / Graph Engine
 
----
+Allows defining a small directed graph of “steps” (nodes).
 
-<h1>Installation</h1>
+Each node corresponds to a tool function (e.g., extract → review → end).
 
-<h3>1. Clone the repository</h3>
-<div>
+The engine runs the graph step by step and returns execution logs and the final state.
 
-```bash
-git clone https://github.com/sheebanadeem/code-review-mini-agent.git
-cd code-review-mini-agent
+API Documentation
 
-```
-</div>
-<h3>2. Create a virtual environment</h3>
-<div>
-
-```bash
-python -m venv .venv
-```
-</div>
-<h3>3. Activate the virtual environment</h3>
-
-Windows PowerShell:  
-<div>
-
-```bash
-.\.venv\Scripts\Activate.ps1
-```
-</div>
-<h3>4. Install dependencies</h3>
-<div>
-
-```bash
-python -m pip install --upgrade pip  
-pip install -r requirements.txt  
-```
-</div>
-(Optional) Install Ruff:  
-<div>
-
-```bash
-pip install ruff  
-```
-</div>
----
-
-<h1>Running the Application</h1>
-
-Start the FastAPI server:
-<div>
-
-```bash
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-</div>
-Open the interactive API docs in your browser:
+The service exposes an OpenAPI specification and interactive documentation at:
 
 http://127.0.0.1:8000/docs
 
----
+Project Structure
+app/
+ ├── main.py           # FastAPI entrypoint  
+ ├── agent.py          # CodeReviewAgent logic  
+ ├── utils.py          # AST helpers, radon utilities  
+ ├── engine.py         # Graph runner implementation  
+ ├── graphs.py         # Graph create/run/state endpoints  
+ ├── models.py         # SQLAlchemy model definitions  
+ ├── schemas.py        # Pydantic schemas  
+ └── db.py             # Database session + initialization
 
-<h1>API Usage</h1>
+tests/
+ └── test_graphs.py    # Basic tests for graph engine
 
-<h3>POST /review</h3>
+requirements.txt
+README.md
+.gitignore
 
-Send a JSON body with a "source" field containing Python code.
+Getting Started
+Create a virtual environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 
-Example JSON:
+Install dependencies
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 
-{  
-  "source": "def add(a, b):\n    return a + b\n# TODO improve types"  
+
+(Optional)
+
+pip install ruff
+
+Running the Application
+
+To run the FastAPI service:
+
+# Disable auto-opening browser tabs when using --reload, if needed
+$env:OPEN_BROWSER = "0"
+
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+
+Open the API docs at:
+
+http://127.0.0.1:8000/docs
+
+API Overview
+POST /review
+
+Submit Python source code in JSON format.
+
+Example body:
+
+{
+  "source": "def add(a, b):\n    return a + b\n# TODO: improve types"
 }
 
-<h3>POST /review/file</h3>
+POST /review/file
 
-Upload a .py file using form-data with the field name:  
-file
+Upload a .py file using multipart form-data.
 
-<h3>GET /review/{id}</h3>
+Field: file
 
-Retrieve a previously saved code review.
+GET /review/{id}
 
----
+Fetch a previously stored review by its ID.
 
-<h1>Example Review Output</h1>
+Graph Endpoints
 
-{  
-  "id": 1,  
-  "source_hash": "9bae4f1cf83a...",  
-  "summary": "Analyzed 1 functions, avg complexity 1.00, 1 TODO/print findings.",  
-  "findings": [  
-    { "name": "add", "lineno": 1, "end_lineno": 2, "complexity": 1, "length": 2 },  
-    { "lineno": 3, "message": "# TODO improve types" }  
-  ],  
-  "suggestions": [  
-    "Address TODO on line 3 by converting it into a tracked issue instead of inline comments."  
-  ],  
-  "created_at": "2025-01-01T12:00:00"  
-}
+POST /graph/create – Define a graph.
 
----
+POST /graph/run – Start execution of a graph using an initial state.
 
-<h1>Graph / Workflow Engine</h1>
+GET /graph/state/{run_id} – Poll graph execution progress.
 
-Available endpoints:
-
-POST /graph/create  
-POST /graph/run  
-GET /graph/state/{run_id}  
-
----
-
-<h1>Testing</h1>
-
-Run tests:
-
+Running Tests
 pytest -q
 
----
-<h1>Outputs</h1>
-<p align="center">
-  <img src="images\Screenshot 2025-12-11 062529.png"" width="700">
-</p>
----
-<h1>Notes</h1>
+Notes
 
-- All timestamps are ISO-8601 strings.  
-- UTF-8 fallback decoding for file uploads.  
-- Graph engine prevents infinite loops using max_iterations.  
-- Branch conditions use a restricted eval environment.  
+The service automatically handles cases where Ruff is not installed.
 
----
+Radon is required for complexity analysis and included in requirements.txt.
 
-<h1>Maintainer</h1>
+File uploads are decoded as UTF-8 with a safe fallback to avoid crashes.
 
-Sheeba Nadeem  
+All timestamps returned to the client are normalized to ISO-8601 strings.
 
----
-
-
-
-
-
-
-
-
-
+The workflow engine limits iterations to prevent infinite loops.
