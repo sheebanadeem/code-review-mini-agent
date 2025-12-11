@@ -44,31 +44,39 @@ yaml
 <h2>Installation</h2>
 
 <h3>1. Clone the repository</h3>
+
 <div>
-bash
+
+```bash
 
 
 git clone https://github.com/sheebanadeem/code-review-mini-agent.git  
 cd code-review-mini-agent
-~~~
+```
 </div>
 <h3>2. Create a virtual environment</h3>
-
+<div>
+```bash
 python -m venv .venv  
 .\.venv\Scripts\activate
-
+```
+</div>
 <h3>3. Install dependencies</h3>
-
+<div>
+```bash
 pip install -r requirements.txt
-
+```
+</div>
 ---
 
 <h2>Running the Application</h2>
 
 <h3>Start the FastAPI server</h3>
-
+<div>
+```bash
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-
+```
+</div>
 The server will start and automatically open:
 
 http://127.0.0.1:8000/docs
